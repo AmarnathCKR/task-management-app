@@ -14,17 +14,24 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../constants/routes';
 import { useThemeContext } from '../context/ThemeContext';
 
-interface LoginFormValues {
+interface RegisterFormValues {
+  name: string;
   email: string;
   password: string;
+  confirmPassword: string;
 }
 
 const schema = yup.object({
+  name: yup.string().required('Name is required'),
   email: yup.string().email('Invalid email').required('Email is required'),
   password: yup.string().min(6, 'At least 6 characters').required('Password is required'),
+  confirmPassword: yup
+    .string()
+    .oneOf([yup.ref('password')], 'Passwords must match')
+    .required('Confirm password is required'),
 });
 
-const Login = () => {
+const Register = () => {
   const navigate = useNavigate();
   const { mode } = useThemeContext();
 
@@ -32,14 +39,14 @@ const Login = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginFormValues>({
+  } = useForm<RegisterFormValues>({
     resolver: yupResolver(schema),
   });
 
-  const onSubmit: SubmitHandler<LoginFormValues> = (data) => {
-    console.log('Login data:', data);
+  const onSubmit: SubmitHandler<RegisterFormValues> = (data) => {
+    console.log('Register data:', data);
     
-    navigate(ROUTES.DASHBOARD);
+    navigate(ROUTES.SIGN_IN);
   };
 
   return (
@@ -56,14 +63,14 @@ const Login = () => {
       <Card
         sx={{
           width: '100%',
-          maxWidth: 420,
+          maxWidth: 480,
           p: 3,
           boxShadow: mode === 'light' ? 3 : 6,
         }}
       >
         <CardContent>
           <Typography variant="h4" mb={2} textAlign="center">
-            Sign In
+            Create Account
           </Typography>
 
           <Box
@@ -72,6 +79,14 @@ const Login = () => {
             onSubmit={handleSubmit(onSubmit)}
             sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
           >
+            <TextField
+              label="Full Name"
+              fullWidth
+              {...register('name')}
+              error={!!errors.name}
+              helperText={errors.name?.message}
+            />
+
             <TextField
               label="Email"
               fullWidth
@@ -89,14 +104,23 @@ const Login = () => {
               helperText={errors.password?.message}
             />
 
+            <TextField
+              label="Confirm Password"
+              type="password"
+              fullWidth
+              {...register('confirmPassword')}
+              error={!!errors.confirmPassword}
+              helperText={errors.confirmPassword?.message}
+            />
+
             <Button type="submit" variant="contained" size="large" fullWidth>
-              Sign In
+              Sign Up
             </Button>
 
             <Typography variant="body2" textAlign="center" mt={1}>
-              Don’t have an account?{' '}
-              <Link component="button" onClick={() => navigate(ROUTES.SIGN_UP)}>
-                Sign Up
+              Already have an account?{' '}
+              <Link component="button" onClick={() => navigate(ROUTES.SIGN_IN)}>
+                Sign In
               </Link>
             </Typography>
           </Box>
@@ -106,4 +130,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;

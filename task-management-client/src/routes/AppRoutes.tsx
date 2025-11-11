@@ -3,14 +3,18 @@ import { useSelector } from 'react-redux';
 import ProtectedRoute from './ProtectedRoute';
 import { ROUTES } from '../constants/routes';
 import type { RootState } from '../store';
+import Login from '../pages/Login';
+import Register from '../pages/Register';
+import MainLayout from '../layout/MainLayout';
 
 const AppRoutes = () => {
   const { accessToken } = useSelector((state: RootState) => state.auth);
 
   return (
     <Routes>
-      <Route path={ROUTES.SIGN_IN} element={"Login"} />
-      <Route path={ROUTES.SIGN_UP} element={"sing up"} />
+   <Route element={<MainLayout />}>
+       <Route path={ROUTES.SIGN_IN} element={<Login/>} />
+      <Route path={ROUTES.SIGN_UP} element={<Register/>} />
 
       <Route
         path={ROUTES.DASHBOARD}
@@ -47,7 +51,7 @@ const AppRoutes = () => {
             replace
           />
         }
-      />
+      /></Route>
     </Routes>
   );
 };
