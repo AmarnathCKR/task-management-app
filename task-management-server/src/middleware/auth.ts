@@ -13,7 +13,7 @@ export const requireAuth = async (req: AuthRequest, res: Response, next: NextFun
   const token = authHeader.split(" ")[1];
   try {
     const payload = verifyAccessToken(token);
-    // optionally you can fetch user to ensure still exists
+   
     const user = await User.findById(payload.sub);
     if (!user) return res.status(401).json({ message: "User not found" });
 

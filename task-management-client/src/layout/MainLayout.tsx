@@ -1,12 +1,26 @@
 import { AppBar, Toolbar, Typography, IconButton, Box } from "@mui/material";
 import { Brightness4, Brightness7 } from "@mui/icons-material";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import { useThemeContext } from "../context/ThemeContext";
+import { useDispatch, useSelector } from "react-redux";
+import type { RootState } from "../store";
+import { logout } from "../store/authSlice";
+import {
+  Logout as LogoutIcon,
+} from '@mui/icons-material';
 
 const MainLayout = () => {
   const themeCtx = useThemeContext();
-  if (!themeCtx) return null;
+  const { user } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/signin');
+  };
+
+  if (!themeCtx) return null;
   const { mode, toggleTheme } = themeCtx;
 
   return (
@@ -26,9 +40,17 @@ const MainLayout = () => {
             Task Manager
           </Typography>
 
-          <IconButton onClick={toggleTheme} color="inherit">
-            {mode === "light" ? <Brightness4 /> : <Brightness7 />}
-          </IconButton>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+              {user?.name} {user?.role === 'admin' && '(Admin)'}
+            </Typography>
+            <IconButton color="inherit" onClick={toggleTheme}>
+              {mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
+            </IconButton>
+            <IconButton color="inherit" onClick={handleLogout}>
+              <LogoutIcon />
+            </IconButton>
+          </Box>
         </Toolbar>
       </AppBar>
 

@@ -1,6 +1,7 @@
-import { useForm, type SubmitHandler } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useForm, type SubmitHandler } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 import {
   Box,
   Button,
@@ -9,10 +10,14 @@ import {
   TextField,
   Typography,
   Link,
-} from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '../constants/routes';
-import { useThemeContext } from '../context/ThemeContext';
+  CircularProgress,
+  Alert,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "../constants/routes";
+import { useThemeContext } from "../context/ThemeContext";
+import { useMutation } from "@tanstack/react-query";
+import { registerService } from "../services/authServices";
 
 interface RegisterFormValues {
   name: string;
@@ -22,13 +27,13 @@ interface RegisterFormValues {
 }
 
 const schema = yup.object({
-  name: yup.string().required('Name is required'),
-  email: yup.string().email('Invalid email').required('Email is required'),
-  password: yup.string().min(6, 'At least 6 characters').required('Password is required'),
+  name: yup.string().required("Name is required"),
+  email: yup.string().email("Invalid email").required("Email is required"),
+  password: yup.string().min(6, "At least 6 characters").required("Password is required"),
   confirmPassword: yup
     .string()
-    .oneOf([yup.ref('password')], 'Passwords must match')
-    .required('Confirm password is required'),
+    .oneOf([yup.ref("password")], "Passwords must match")
+    .required("Confirm password is required"),
 });
 
 const Register = () => {
@@ -43,29 +48,40 @@ const Register = () => {
     resolver: yupResolver(schema),
   });
 
+  // ✅ Mutation for register API
+  const { mutate, isPending, isError, error } = useMutation({
+    mutationFn: (data: RegisterFormValues) =>
+      registerService({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+      }),
+    onSuccess: () => {
+      navigate(ROUTES.SIGN_IN);
+    },
+  });
+
   const onSubmit: SubmitHandler<RegisterFormValues> = (data) => {
-    console.log('Register data:', data);
-    
-    navigate(ROUTES.SIGN_IN);
+    mutate(data);
   };
 
   return (
     <Box
       sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        bgcolor: 'background.default',
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "100vh",
+        bgcolor: "background.default",
         px: 2,
       }}
     >
       <Card
         sx={{
-          width: '100%',
+          width: "100%",
           maxWidth: 480,
           p: 3,
-          boxShadow: mode === 'light' ? 3 : 6,
+          boxShadow: mode === "light" ? 3 : 6,
         }}
       >
         <CardContent>
@@ -73,16 +89,22 @@ const Register = () => {
             Create Account
           </Typography>
 
+          {isError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {(error as any)?.response?.data?.message || "Registration failed"}
+            </Alert>
+          )}
+
           <Box
             component="form"
             noValidate
             onSubmit={handleSubmit(onSubmit)}
-            sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
           >
             <TextField
               label="Full Name"
               fullWidth
-              {...register('name')}
+              {...register("name")}
               error={!!errors.name}
               helperText={errors.name?.message}
             />
@@ -90,7 +112,7 @@ const Register = () => {
             <TextField
               label="Email"
               fullWidth
-              {...register('email')}
+              {...register("email")}
               error={!!errors.email}
               helperText={errors.email?.message}
             />
@@ -99,7 +121,7 @@ const Register = () => {
               label="Password"
               type="password"
               fullWidth
-              {...register('password')}
+              {...register("password")}
               error={!!errors.password}
               helperText={errors.password?.message}
             />
@@ -108,17 +130,24 @@ const Register = () => {
               label="Confirm Password"
               type="password"
               fullWidth
-              {...register('confirmPassword')}
+              {...register("confirmPassword")}
               error={!!errors.confirmPassword}
               helperText={errors.confirmPassword?.message}
             />
 
-            <Button type="submit" variant="contained" size="large" fullWidth>
-              Sign Up
+            <Button
+              type="submit"
+              variant="contained"
+              size="large"
+              fullWidth
+              disabled={isPending}
+              startIcon={isPending ? <CircularProgress size={20} /> : null}
+            >
+              {isPending ? "Signing Up..." : "Sign Up"}
             </Button>
 
             <Typography variant="body2" textAlign="center" mt={1}>
-              Already have an account?{' '}
+              Already have an account?{" "}
               <Link component="button" onClick={() => navigate(ROUTES.SIGN_IN)}>
                 Sign In
               </Link>

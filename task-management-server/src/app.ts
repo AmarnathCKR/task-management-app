@@ -12,7 +12,7 @@ export const createApp = () => {
 
   app.use(
     cors({
-      origin: process.env.FRONTEND_URL || "http://localhost:5173",
+      origin: process.env.FRONTEND_URL || "https://legendary-halibut-q779wj7rjgwc497x-5173.app.github.dev",
       credentials: true,
     })
   );
