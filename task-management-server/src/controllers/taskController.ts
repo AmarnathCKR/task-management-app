@@ -62,7 +62,6 @@ export const updateTask = async (req: AuthRequest, res: Response) => {
     const task = await Task.findById(id);
     if (!task) return res.status(404).json({ message: "Task not found" });
 
-    // only allow owner or admin to update
     if (task.createdBy.toString() !== req.user!.id && req.user!.role !== "admin") {
       return res.status(403).json({ message: "Forbidden" });
     }
